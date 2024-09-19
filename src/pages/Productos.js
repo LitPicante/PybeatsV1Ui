@@ -1,61 +1,85 @@
-import React, { useState } from 'react';
-
-
+import React, { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 
 const Productos = () => {
-
     const [productos, setProductos] = useState([]);
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [costo, setCosto] = useState('');
     const [precioVenta, setPrecioVenta] = useState('');
     const [stock, setStock] = useState('');
+    const [error, setError] = useState('');
 
+    // Obtener el token del localStorage
+    const token = localStorage.getItem('access_token');
+
+    // Usar useMemo para memorizar axiosConfig y evitar recrearlo en cada render
+    const axiosConfig = useMemo(() => ({
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }), [token]);
+
+    // Obtener productos desde el backend
+    useEffect(() => {
+        axios.get('http://localhost:8000/api/productos/', axiosConfig)
+            .then(response => setProductos(response.data))
+            .catch(error => {
+                console.error('Error fetching products:', error);
+                setError('Error al obtener los productos. Verifica tu conexión o si el token es válido.');
+            });
+    }, [axiosConfig]);  // Usar axiosConfig como dependencia
+
+    // Agregar nuevo producto
     const agregarProducto = () => {
         const nuevoProducto = {
             nombre,
             descripcion,
-            costo,
-            precioVenta,
-            stock
+            costo: parseFloat(costo),
+            precio_venta: parseFloat(precioVenta),
+            stock: parseInt(stock, 10)
         };
-        setProductos([...productos, nuevoProducto]);
-        // Limpiar campos después de agregar
-        setNombre('');
-        setDescripcion('');
-        setCosto('');
-        setPrecioVenta('');
-        setStock('');
+
+        axios.post('http://localhost:8000/api/productos/', nuevoProducto, axiosConfig)
+            .then(response => {
+                setProductos([...productos, response.data]);
+                setNombre('');
+                setDescripcion('');
+                setCosto('');
+                setPrecioVenta('');
+                setStock('');
+            })
+            .catch(error => {
+                console.error('Error adding product:', error);
+                setError('Error al agregar el producto.');
+            });
     };
 
-    const eliminarProducto = (index) => {
-        const nuevosProductos = productos.filter((_, i) => i !== index);
-        setProductos(nuevosProductos);
+    // Eliminar producto
+    const eliminarProducto = (id) => {
+        axios.delete(`http://localhost:8000/api/productos/${id}/`, axiosConfig)
+            .then(() => {
+                setProductos(productos.filter(producto => producto.id !== id));
+            })
+            .catch(error => {
+                console.error('Error deleting product:', error);
+                setError('Error al eliminar el producto.');
+            });
     };
-
-
-
-
-
-
 
     return (
         <div>
-            <br></br>
-            <br></br>
             <div className="container">
-
                 <h1 className="text-center">Bienvenido al módulo de Productos</h1>
 
-                <br></br>
-                <br></br>
+                {error && <div className="alert alert-danger text-center">{error}</div>}
 
                 <div className="card mx-auto" style={{ maxWidth: '600px' }}>
                     <div className="card-body">
                         <h5 className="card-title text-center">ABM de Productos</h5>
                         <form>
-                            <div className="mb-3">
-                                <label htmlFor="nombre" className="form-label">Nombre</label>
+                            <div className="form-group mb-3">
+                                <label htmlFor="nombre">Nombre</label>
                                 <input
                                     type="text"
                                     className="form-control"
@@ -64,8 +88,8 @@ const Productos = () => {
                                     onChange={(e) => setNombre(e.target.value)}
                                 />
                             </div>
-                            <div className="mb-3">
-                                <label htmlFor="descripcion" className="form-label">Descripción</label>
+                            <div className="form-group mb-3">
+                                <label htmlFor="descripcion">Descripción</label>
                                 <textarea
                                     className="form-control"
                                     id="descripcion"
@@ -74,8 +98,8 @@ const Productos = () => {
                                     onChange={(e) => setDescripcion(e.target.value)}
                                 ></textarea>
                             </div>
-                            <div className="mb-3">
-                                <label htmlFor="costo" className="form-label">Costo</label>
+                            <div className="form-group mb-3">
+                                <label htmlFor="costo">Costo</label>
                                 <input
                                     type="number"
                                     className="form-control"
@@ -84,8 +108,8 @@ const Productos = () => {
                                     onChange={(e) => setCosto(e.target.value)}
                                 />
                             </div>
-                            <div className="mb-3">
-                                <label htmlFor="precioVenta" className="form-label">Precio Venta</label>
+                            <div className="form-group mb-3">
+                                <label htmlFor="precioVenta">Precio Venta</label>
                                 <input
                                     type="number"
                                     className="form-control"
@@ -94,8 +118,8 @@ const Productos = () => {
                                     onChange={(e) => setPrecioVenta(e.target.value)}
                                 />
                             </div>
-                            <div className="mb-3">
-                                <label htmlFor="stock" className="form-label">Stock</label>
+                            <div className="form-group mb-3">
+                                <label htmlFor="stock">Stock</label>
                                 <input
                                     type="number"
                                     className="form-control"
@@ -114,41 +138,37 @@ const Productos = () => {
                     </div>
                 </div>
 
-                <br></br>
-                <h3 className="text-center">Listado de Productos</h3>
+                <h3 className="text-center mt-4">Listado de Productos</h3>
                 <table className="table table-striped">
                     <thead>
                         <tr>
-                            <th scope="col">Nombre</th>
-                            <th scope="col">Descripción</th>
-                            <th scope="col">Costo</th>
-                            <th scope="col">Precio Venta</th>
-                            <th scope="col">Stock</th>
-                            <th scope="col">Acciones</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Costo</th>
+                            <th>Precio Venta</th>
+                            <th>Stock</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {productos.map((producto, index) => (
-                            <tr key={index}>
+                        {productos.map((producto) => (
+                            <tr key={producto.id}>
                                 <td>{producto.nombre}</td>
                                 <td>{producto.descripcion}</td>
                                 <td>{producto.costo}</td>
-                                <td>{producto.precioVenta}</td>
+                                <td>{producto.precio_venta}</td>
                                 <td>{producto.stock}</td>
                                 <td>
                                     <button
                                         className="btn btn-danger btn-sm"
-                                        onClick={() => eliminarProducto(index)}>
-                                        X
+                                        onClick={() => eliminarProducto(producto.id)}>
+                                        Eliminar
                                     </button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-                <br></br>
-                <br></br>
-                <br></br>
             </div>
         </div>
     );

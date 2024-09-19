@@ -1,43 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Mascotas = () => {
-  const [mascotas, setMascotas] = useState([]);
+const Clientes = () => {
+  const [clientes, setClientes] = useState([]);
   const [nombre, setNombre] = useState('');
-  const [raza, setRaza] = useState('');
-  const [edad, setEdad] = useState('');
-  const [dueño, setDueño] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [direccion, setDireccion] = useState('');
 
-  // Obtener la lista de mascotas desde el backend
+  // Obtener la lista de clientes desde el backend
   useEffect(() => {
-    axios.get('http://localhost:8000/mascotas/')
-      .then(response => setMascotas(response.data))
-      .catch(error => console.error('Error fetching pets:', error));
+    axios.get('http://localhost:8000/clientes/')
+      .then(response => setClientes(response.data))
+      .catch(error => console.error('Error fetching clients:', error));
   }, []);
 
-  // Agregar una nueva mascota al backend
-  const agregarMascota = () => {
-    const nuevaMascota = { nombre, raza, edad: parseInt(edad), dueño };
+  // Agregar un nuevo cliente al backend
+  const agregarCliente = () => {
+    const nuevoCliente = { nombre, email, telefono, direccion };
 
-    axios.post('http://localhost:8000/mascotas/', nuevaMascota)
+    axios.post('http://localhost:8000/clientes/', nuevoCliente)
       .then(response => {
-        setMascotas([...mascotas, response.data]);
+        setClientes([...clientes, response.data]);
         // Limpiar los campos del formulario después de agregar
         setNombre('');
-        setRaza('');
-        setEdad('');
-        setDueño('');
+        setEmail('');
+        setTelefono('');
+        setDireccion('');
       })
-      .catch(error => console.error('Error adding pet:', error));
+      .catch(error => console.error('Error adding client:', error));
   };
 
-  // Eliminar una mascota desde el backend
-  const eliminarMascota = (id) => {
-    axios.delete(`http://localhost:8000/mascotas/${id}/`)
+  // Eliminar un cliente desde el backend
+  const eliminarCliente = (id) => {
+    axios.delete(`http://localhost:8000/clientes/${id}/`)
       .then(() => {
-        setMascotas(mascotas.filter(mascota => mascota.id !== id));
+        setClientes(clientes.filter(cliente => cliente.id !== id));
       })
-      .catch(error => console.error('Error deleting pet:', error));
+      .catch(error => console.error('Error deleting client:', error));
   };
 
   return (
@@ -46,7 +46,7 @@ const Mascotas = () => {
         <div className="col-md-6">
           <div className="card">
             <div className="card-header text-center">
-              <h3>ABM de Mascotas</h3>
+              <h3>ABM de Clientes</h3>
             </div>
             <div className="card-body">
               <form>
@@ -60,37 +60,37 @@ const Mascotas = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Raza</label>
+                  <label>Email</label>
                   <input
-                    type="text"
+                    type="email"
                     className="form-control"
-                    value={raza}
-                    onChange={(e) => setRaza(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Edad</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={edad}
-                    onChange={(e) => setEdad(e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Dueño</label>
+                  <label>Teléfono</label>
                   <input
                     type="text"
                     className="form-control"
-                    value={dueño}
-                    onChange={(e) => setDueño(e.target.value)}
+                    value={telefono}
+                    onChange={(e) => setTelefono(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Dirección</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={direccion}
+                    onChange={(e) => setDireccion(e.target.value)}
                   />
                 </div>
                 <div className="text-center">
                   <button
                     type="button"
                     className="btn btn-success mt-3"
-                    onClick={agregarMascota}
+                    onClick={agregarCliente}
                   >
                     Guardar
                   </button>
@@ -105,28 +105,28 @@ const Mascotas = () => {
 
       <div className="row justify-content-center">
         <div className="col-md-6">
-          <h3 className="text-center">Listado de Mascotas</h3>
+          <h3 className="text-center">Listado de Clientes</h3>
           <table className="table table-striped mt-3">
             <thead>
               <tr>
                 <th>Nombre</th>
-                <th>Raza</th>
-                <th>Edad</th>
-                <th>Dueño</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {mascotas.map((mascota) => (
-                <tr key={mascota.id}>
-                  <td>{mascota.nombre}</td>
-                  <td>{mascota.raza}</td>
-                  <td>{mascota.edad}</td>
-                  <td>{mascota.dueño}</td>
+              {clientes.map((cliente) => (
+                <tr key={cliente.id}>
+                  <td>{cliente.nombre}</td>
+                  <td>{cliente.email}</td>
+                  <td>{cliente.telefono}</td>
+                  <td>{cliente.direccion}</td>
                   <td>
                     <button
                       className="btn btn-danger"
-                      onClick={() => eliminarMascota(mascota.id)}
+                      onClick={() => eliminarCliente(cliente.id)}
                     >
                       X
                     </button>
@@ -141,4 +141,4 @@ const Mascotas = () => {
   );
 };
 
-export default Mascotas;
+export default Clientes;

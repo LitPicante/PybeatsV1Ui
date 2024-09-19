@@ -17,6 +17,10 @@ const Home = () => {
     const ir_modulo_mascotas = () => {
       navigate('/mascotas');
     };
+
+    const ir_modulo_clientes = () => {
+      navigate('/clientes');
+    };
   
     /*const notify = () => {
       toast.success('¡Has hecho clic en el botón!', {
@@ -45,7 +49,9 @@ const Home = () => {
         <button className="btn btn-primary" onClick={ir_modulo_mascotas}>
           Mascotas
         </button>
-
+        <button className="btn btn-primary" onClick={ir_modulo_clientes}>
+          Clientes
+        </button>
         <br></br>
         <br></br>
 
