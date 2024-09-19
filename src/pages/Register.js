@@ -30,7 +30,7 @@ function Register() {
       // Redirigir al home
       navigate('/home');
     } catch (error) {
-      setError('Error al registrar el usuario, intenta de nuevo');
+      setError('Error al registrar el usuario, usuario existente');
     }
   };
 

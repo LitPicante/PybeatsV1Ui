@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
 const Mascotas = () => {
@@ -7,19 +7,33 @@ const Mascotas = () => {
   const [raza, setRaza] = useState('');
   const [edad, setEdad] = useState('');
   const [dueño, setDueño] = useState('');
+  const [error, setError] = useState('');
+
+  // Obtener el token del localStorage
+  const token = localStorage.getItem('access_token');
+
+  // Memorizar axiosConfig para evitar recrearlo en cada render
+  const axiosConfig = useMemo(() => ({
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  }), [token]);
 
   // Obtener la lista de mascotas desde el backend
   useEffect(() => {
-    axios.get('http://localhost:8000/mascotas/')
+    axios.get('http://localhost:8000/api/mascotas/', axiosConfig)
       .then(response => setMascotas(response.data))
-      .catch(error => console.error('Error fetching pets:', error));
-  }, []);
+      .catch(error => {
+        console.error('Error fetching pets:', error);
+        setError('Error al obtener las mascotas. Verifica tu conexión o si el token es válido.');
+      });
+  }, [axiosConfig]);
 
   // Agregar una nueva mascota al backend
   const agregarMascota = () => {
     const nuevaMascota = { nombre, raza, edad: parseInt(edad), dueño };
 
-    axios.post('http://localhost:8000/mascotas/', nuevaMascota)
+    axios.post('http://localhost:8000/api/mascotas/', nuevaMascota, axiosConfig)
       .then(response => {
         setMascotas([...mascotas, response.data]);
         // Limpiar los campos del formulario después de agregar
@@ -28,20 +42,29 @@ const Mascotas = () => {
         setEdad('');
         setDueño('');
       })
-      .catch(error => console.error('Error adding pet:', error));
+      .catch(error => {
+        console.error('Error adding pet:', error);
+        setError('Error al agregar la mascota.');
+      });
   };
 
   // Eliminar una mascota desde el backend
   const eliminarMascota = (id) => {
-    axios.delete(`http://localhost:8000/mascotas/${id}/`)
+    axios.delete(`http://localhost:8000/api/mascotas/${id}/`, axiosConfig)
       .then(() => {
         setMascotas(mascotas.filter(mascota => mascota.id !== id));
       })
-      .catch(error => console.error('Error deleting pet:', error));
+      .catch(error => {
+        console.error('Error deleting pet:', error);
+        setError('Error al eliminar la mascota.');
+      });
   };
 
   return (
     <div className="container mt-5">
+      {/* Mostrar el mensaje de error si ocurre */}
+      {error && <div className="alert alert-danger">{error}</div>}
+      
       <div className="row justify-content-center">
         <div className="col-md-6">
           <div className="card">
